@@ -1,9 +1,9 @@
 import com.squareup.kotlinpoet.*
 import java.time.LocalDateTime
 
-class EntityStencil(private val tableName: String, private val columns: List<Pair<String, String>>) {
+class EntityStencil(private val tableName: String, private val columns: List<Column>) {
 
-    fun doApply() {
+    fun doApply(): FileSpec {
         val (database, entityName) = tableNameToClassName(tableName)
 
         val dbNameAnnotationSpec = AnnotationSpec.builder(ClassName("", "DbName"))
@@ -14,7 +14,7 @@ class EntityStencil(private val tableName: String, private val columns: List<Pai
             .addMember("name = %S", entityName)
             .build()
 
-        FileSpec.builder("com.entities.$database", entityName)
+       return FileSpec.builder("com.entities.$database", entityName)
             .addFileComment("Generated on %S", LocalDateTime.now())
             .addType(
                 TypeSpec.classBuilder(entityName)
@@ -25,19 +25,16 @@ class EntityStencil(private val tableName: String, private val columns: List<Pai
                         constructorFor(columns)
                     ).build()
             )
-            .build().writeTo(System.out)
+            .build()
     }
 
-    private fun constructorFor(columns: List<Pair<String, String>>): FunSpec {
+    private fun constructorFor(columns: List<Column>): FunSpec {
         return FunSpec.constructorBuilder().apply {
-            columns.map { toType(it) }.forEach { (name, type) ->
-                addParameter(columnNameToPropertyName(name), type)
+            columns.forEach {
+                addParameter(it.formattedColumnName(), it.asTypeDef())
             }
         }.build()
     }
-
-    private fun columnNameToPropertyName(columnName: String) =
-        if (columnName.first().isLowerCase()) columnName else columnName.replaceFirstChar { it.lowercase() }
 
     private fun tableNameToClassName(tableName: String): Pair<String, String> {
         val split = tableName.split(".")

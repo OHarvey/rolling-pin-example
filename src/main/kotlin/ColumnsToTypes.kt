@@ -1,15 +1,19 @@
+import com.squareup.kotlinpoet.ClassName
+import com.squareup.kotlinpoet.INT
+import com.squareup.kotlinpoet.STRING
+import com.squareup.kotlinpoet.TypeName
 import kotlin.reflect.KClass
 
-private val mapping = mapOf<String, KClass<*>>(
-    "INT" to Int::class,
-    "BIGINT" to Int::class,
-    "VARCHAR" to String::class
+private val mapping = mapOf(
+    "INT" to INT,
+    "BIGINT" to INT,
+    "VARCHAR" to STRING
 )
 
 
-fun toType(column: Pair<String, String>): Pair<String, KClass<*>> {
+fun toType(column: String): ClassName {
     // We don't care about sizes
-    val type = column.second.substringBefore("(")
+    val type = column.substringBefore("(")
 
-    return column.first to (mapping[type] ?: throw Error("column type not mapped ${column.second} possibilities $mapping"))
+    return  mapping[type] ?: throw Error("column type not mapped ${column} possibilities $mapping")
 }

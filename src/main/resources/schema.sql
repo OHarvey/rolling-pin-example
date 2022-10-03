@@ -9,6 +9,11 @@ CREATE TABLE myDatabase.dbo.MyTable (
 -- Should ignore this line!
 
 CREATE TABLE myDatabase.dbo.MyOtherTable (
-        PersonID INT,
+        PersonID INT NOT NULL,
+        City VARCHAR(255)
+);
+
+CREATE TABLE otherDatabase.dbo.City (
+        id INT PRIMARY IDENTITY NOT NULL,
         City VARCHAR(255)
 );
